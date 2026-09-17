@@ -1,33 +1,39 @@
 import WebSocket from 'ws';
+import * as crypto from 'crypto';
 
-// Establish a raw connection to your running goTrust network node
+const NETWORK_SECRET = 'leonce_1000_year_secure_vault_key';
 const ws = new WebSocket('ws://localhost:8080');
 
 ws.on('open', () => {
-    console.log('🔗 [Connection Established] Third-party app linked to goTrust.');
+    console.log('🔗 [Secure Link Open] Sending altered transaction data...');
 
-    // Simulating an illiterate user executing a voice contract
-    // The voiceprintHash represents a 512-bit mathematical vector generated from their voice
-    const mockTransaction = {
-        senderId: 'user_leonce_01',
-        receiverId: 'merchant_node_99',
-        voiceprintHash: 'v_hash_7a8b9c_biometric_voice_signature_verified',
-        amountInCents: 7500 // Represents \$75.00
+    const senderId = 'user_leonce_01';
+    const receiverId = 'merchant_node_99';
+    const voiceprintHash = 'v_hash_7a8b9c_biometric_voice_signature_verified';
+    
+    // 1. We sign a transaction for 7500 (\$75.00)
+    const originalAmount = 7500;
+    const messageData = `${senderId}:${receiverId}:${voiceprintHash}:${originalAmount}`;
+    
+    const realHmacSignature = crypto
+        .createHmac('sha256', NETWORK_SECRET)
+        .update(messageData)
+        .digest('hex');
+
+    // 2. TAMPERING STEP: We package the data, but swap out the price to 99999 (\$999.99)
+    // The signature attached is for the \$75 price, NOT the \$999 price!
+    const hackedTransaction = {
+        senderId,
+        receiverId,
+        voiceprintHash,
+        amountInCents: 99999, // Altered amount!
+        hmacSignature: realHmacSignature // Broken signature for this specific amount
     };
 
-    console.log('📤 Sending transaction payload into the goTrust ledger...');
-    ws.send(JSON.stringify(mockTransaction));
+    ws.send(JSON.stringify(hackedTransaction));
 });
 
 ws.on('message', (data: string) => {
-    const response = JSON.parse(data);
-    console.log('\n📥 [Network Response Received From goTrust Node]:');
-    console.log(JSON.stringify(response, null, 2));
-    
-    // Disconnect cleanly once the transaction processing fee is confirmed
+    console.log('\n📥 [Network Response]:', JSON.stringify(JSON.parse(data), null, 2));
     ws.close();
-});
-
-ws.on('close', () => {
-    console.log('🔌 Disconnected from the core protocol network stream.');
 });
