@@ -12,9 +12,13 @@
   "type": "commonjs",
   "devDependencies": {
     "@types/node": "^22.20.3",
+    "@types/pg": "^8.23.1",
     "@types/ws": "^8.18.1",
     "tsx": "^4.23.13",
     "typescript": "^7.0.2",
     "ws": "^8.21.3"
+  },
+  "dependencies": {
+    "pg": "^8.23.0"
   }
 }
