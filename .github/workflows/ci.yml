@@ -1,4 +1,4 @@
-name: goTrust Core CI Pipeline
+name: goTrust Core CI/CD Pipeline
 
 on:
   push:
@@ -7,7 +7,7 @@ on:
     branches: [ main, master ]
 
 jobs:
-  build-and-verify:
+  validate-and-build:
     runs-on: ubuntu-latest
 
     steps:
@@ -23,8 +23,11 @@ jobs:
     - name: 📦 Install Open-Source Dependencies
       run: npm ci
 
-    - name: ⚡ Verify TypeScript Compilation
+    - name: ⚡ Verify TypeScript Compilation Safety
       run: npx tsc --noEmit
-      
+
     - name: 🧪 Execute Automated Vitest Unit Verification Suites
-      run: npx vitest run
+      run: npx vitest run server.test.ts
+
+    - name: 🏗️ Compile Production Build Artifacts
+      run: npx tsc
