@@ -25,3 +25,6 @@ jobs:
 
     - name: ⚡ Verify TypeScript Compilation
       run: npx tsc --noEmit
+      
+    - name: 🧪 Execute Automated Vitest Unit Verification Suites
+      run: npx vitest run

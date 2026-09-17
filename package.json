@@ -16,6 +16,7 @@
     "@types/ws": "^8.18.1",
     "tsx": "^4.23.13",
     "typescript": "^7.0.2",
+    "vitest": "^5.0.1",
     "ws": "^8.21.3"
   },
   "dependencies": {
