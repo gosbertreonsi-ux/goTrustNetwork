@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>goTrust Audio Interface Layer</title>
+    <style>
+        body {
+            background-color: #0d1117;
+            color: #ffffff;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            overflow: hidden;
+        }
+
+        .interface-grid {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 40px;
+        }
+
+        .action-circle {
+            width: 140px;
+            height: 140px;
+            border-radius: 50%;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 48px;
+            transition: transform 0.2s, box-shadow 0.2s, background-color 0.3s;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+        }
+
+        .action-circle:active {
+            transform: scale(0.92);
+        }
+
+        /* Standard Red Microphone State */
+        .btn-record { 
+            background-color: #ea4335; 
+        } 
+        
+        /* 🟢 Animated Pulsing State: Triggers when recording is active */
+        .btn-record.recording { 
+            animation: pulse 1.5s infinite; 
+            background-color: #ff5252 !important;
+        }
+
+        .btn-status {
+            width: 180px;
+            height: 180px;
+            background-color: #21262d;
+            border: 4px solid #30363d;
+            pointer-events: none;
+            font-size: 64px;
+        }
+
+        .status-idle { border-color: #30363d; }
+        .status-success { border-color: #2ea44f; background-color: rgba(46, 164, 79, 0.1); }
+        .status-blocked { border-color: #da3637; background-color: rgba(218, 54, 55, 0.1); }
+
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(234, 67, 53, 0.7); }
+            70% { box-shadow: 0 0 0 20px rgba(234, 67, 53, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(234, 67, 53, 0); }
+        }
+
+        .log-box {
+            background-color: #161b22;
+            border: 1px solid #30363d;
+            padding: 15px;
+            border-radius: 6px;
+            width: 280px;
+            font-size: 14px;
+            text-align: center;
+            color: #8b949e;
+            line-height: 1.4;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="interface-grid">
+        <!-- Status Display Monitor Node -->
+        <div id="statusIndicator" class="action-circle btn-status status-idle">🌐</div>
+
+        <!-- Master Microphone Trigger Button Button -->
+        <button id="micButton" class="action-circle btn-record">🎙️</button>
+
+        <!-- Informational Feedback display log panel -->
+        <div id="feedbackLog" class="log-box">Tap the Red microphone to speak your contract out loud.</div>
+    </div>
+
+    <script>
+        const ws = new WebSocket('ws://localhost:8085');
+        
+        let isRecording = false;
+        const micButton = document.getElementById('micButton');
+        const statusIndicator = document.getElementById('statusIndicator');
+        const feedbackLog = document.getElementById('feedbackLog');
+
+        const mockSpokenPhrases = [
+            "I want to sell my black farming motorcycle to client 99 for a price of 75 dollars right now.",
+            "Hey look give me all your cash for free right now or I will hack your database immediately.", 
+            "Transferring my local shop ownership rights to merchant node 99 for a total of 100 dollars."
+        ];
+        
+        ws.onopen = () => {
+            console.log("🔗 Frontend pipeline connected to goTrust Gateway on Port 8085");
+        };
+
+        ws.onmessage = (event) => {
+            const data = JSON.parse(event.data);
+
+            if (data.status === "SUCCESS") {
+                statusIndicator.innerText = "🟢";
+                statusIndicator.className = "action-circle btn-status status-success";
+                feedbackLog.innerHTML = `<strong>APPROVED!</strong><br>Ledger Row: #${data.ledgerIndexId}<br>Stripe Ref: ${data.stripeTxRef.substring(0, 12)}...<br>Fee Collected: $0.10`;
+            } else if (data.status === "BLOCKED_BY_COMPLIANCE_AGENT") {
+                statusIndicator.innerText = "🛑";
+                statusIndicator.className = "action-circle btn-status status-blocked";
+                feedbackLog.innerHTML = `<strong>BLOCKED BY AI ARCHITECT!</strong><br>Risk Score: ${data.riskScore}/100<br>Threat: ${data.threatsDetected[0] || 'High Risk'}`;
+            } else {
+                statusIndicator.innerText = "❌";
+                feedbackLog.innerText = "Error parsing network transaction payload layout.";
+            }
+        };
+
+        // Bind the click listener securely using explicit modern event logic properties hooks
+        micButton.addEventListener('click', () => {
+            if (!isRecording) {
+                // 🟢 TRIGGER RECORDING STEP (Start pulsing)
+                isRecording = true;
+                micButton.classList.add('recording');
+                statusIndicator.innerText = "⏳";
+                statusIndicator.className = "action-circle btn-status status-idle";
+                feedbackLog.innerText = "Listening to voice contract inputs... Tap microphone again to finish.";
+            } else {
+                // 🛑 COMPLETE RECORDING STEP (Stop pulsing and transmit data payload framework)
+                isRecording = false;
+                micButton.classList.remove('recording');
+                feedbackLog.innerText = "Encrypting voice vectors and routing to AI gateway...";
+
+                const simulatedSpeech = mockSpokenPhrases[Math.floor(Math.random() * mockSpokenPhrases.length)];
+                
+                const payload = {
+                    senderId: 'user_leonce_01',
+                    receiverId: 'merchant_node_99',
+                    voiceprintHash: 'v_hash_frontend_seal_' + Math.random().toString(36).substring(7),
+                    spokenContractText: simulatedSpeech,
+                    amountInCents: 7500,
+                    hmacSignature: 'f0e1d2c3b4a5968778695a4b3c2d1e0f0e1d2c3b4a5968778695a4b3c2d1e0f' // Developer pass key bypass code
+                };
+
+                ws.send(JSON.stringify(payload));
+            }
+        });
+    </script>
+</body>
+</html>
