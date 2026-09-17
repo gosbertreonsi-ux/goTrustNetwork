@@ -1,0 +1,20 @@
+version: '3.8'
+
+services:
+  # Service 1: The Permanent Storage Ledger Core
+  gotrust-db:
+    image: postgres:latest
+    container_name: gotrust-postgres-cluster
+    restart: always
+    environment:
+      POSTGRES_USER: leonce
+      POSTGRES_PASSWORD: "1971"
+      POSTGRES_DB: gotrust_ledger
+    ports:
+      - "5433:5432" # Maps Port 5433 on your local machine to keep avoiding local port blocks
+    volumes:
+      - gotrust_data_vault:/var/lib/postgresql/data # Retains database data even if container stops
+
+volumes:
+  gotrust_data_vault:
+    driver: local

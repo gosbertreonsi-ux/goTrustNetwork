@@ -8,7 +8,7 @@ echo 📂 Root Path: %CD%
 echo ==================================================
 
 :: 1. Launch the Core Cryptographic Server in a fresh pane
-echo 🟢 Firing up goTrust Core Node (Port 8080)...
+echo 🟢 Firing up goTrust Core Node (Port 8085)...
 start "goTrust Server Node" cmd /k "npx tsx server.ts"
 
 :: 2. Wait 2 seconds to ensure the server pipe binds cleanly before listeners arrive

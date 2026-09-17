@@ -1,9 +1,9 @@
 import WebSocket from 'ws';
 
-const ws = new WebSocket('ws://localhost:8080');
+const ws = new WebSocket('ws://localhost:8085');
 
 console.log("🖥️  [goTrust Real-Time Streaming Dashboard Module initialized]");
-console.log("📡 Hooking into network event pipeline on Port 8080...");
+console.log("📡 Hooking into network event pipeline on Port 8085...");
 
 ws.on('open', () => {
     // Notify the node server that we are connecting purely as a passive stream listener
