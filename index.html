@@ -3,14 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>goTrust Audio Interface Layer</title>
+    <title>goTrust Autonomous UI Dashboard</title>
     <style>
+        :root {
+            --bg-color: #030712;
+            --card-bg: #0b0f19;
+            --border-color: #1f2937;
+            --text-primary: #f9fafb;
+            --text-secondary: #9ca3af;
+            --accent-glow: #3b82f6;
+        }
+
         body {
-            background-color: #0d1117;
-            color: #ffffff;
+            background-color: var(--bg-color);
+            color: var(--text-primary);
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             display: flex;
-            flex-direction: column;
             align-items: center;
             justify-content: center;
             height: 100vh;
@@ -18,93 +26,180 @@
             overflow: hidden;
         }
 
-        .interface-grid {
+        /* 🏗️ LIBRARIES.DEV INSPIRED BORDER BEAM CONTAINER CARD ACCELERATOR */
+        .dashboard-card {
+            position: relative;
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 24px;
+            padding: 40px;
+            width: 360px;
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 40px;
+            gap: 35px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            overflow: hidden;
         }
 
-        .action-circle {
-            width: 140px;
-            height: 140px;
+        /* The Animated Border Beam Layer effect */
+        .dashboard-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            border-radius: 24px;
+            padding: 2px; /* Control beam line thickness */
+            background: linear-gradient(to right, transparent, var(--accent-glow), transparent);
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+            pointer-events: none;
+            z-index: 2;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .dashboard-card.processing::before {
+            opacity: 1;
+            animation: borderBeamMove 3s linear infinite;
+        }
+
+        @keyframes borderBeamMove {
+            0% { background-image: conic-gradient(from 0deg, transparent 70%, var(--accent-glow) 100%); }
+            100% { background-image: conic-gradient(from 360deg, transparent 70%, var(--accent-glow) 100%); }
+        }
+
+        /* 🔮 LIBRARIES.DEV INSPIRED THINKING ORBS WRAPPER */
+        .orb-universe {
+            position: relative;
+            width: 160px;
+            height: 160px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .thinking-orb {
+            position: absolute;
+            width: 100%;
+            height: 100%;
             border-radius: 50%;
-            border: none;
+            background: radial-gradient(circle, rgba(59, 130, 246, 0.2) 0%, transparent 70%);
+            border: 2px dashed rgba(59, 130, 246, 0.3);
+            transition: transform 0.5s, background 0.5s, border-color 0.5s;
+        }
+
+        /* Active thinking orbs rotation animations */
+        .dashboard-card.processing .thinking-orb {
+            animation: orbSwirl 6s linear infinite;
+            border-color: #60a5fa;
+            background: radial-gradient(circle, rgba(96, 165, 250, 0.3) 0%, transparent 75%);
+        }
+
+        /* Visual states for system validation outcomes */
+        .dashboard-card.success .thinking-orb {
+            border: 3px solid #10b981;
+            background: radial-gradient(circle, rgba(16, 185, 129, 0.25) 0%, transparent 70%);
+            transform: scale(1.05);
+        }
+
+        .dashboard-card.blocked .thinking-orb {
+            border: 3px solid #ef4444;
+            background: radial-gradient(circle, rgba(239, 68, 68, 0.25) 0%, transparent 70%);
+            transform: scale(1.05);
+        }
+
+        @keyframes orbSwirl {
+            0% { transform: rotate(0deg) scale(1); }
+            50% { transform: rotate(180deg) scale(1.08); }
+            100% { transform: rotate(360deg) scale(1); }
+        }
+
+        .center-icon {
+            font-size: 56px;
+            z-index: 5;
+            transition: transform 0.3s;
+        }
+
+        /* Interactive modern button layout */
+        .mic-trigger-btn {
+            background-color: #1f2937;
+            border: 1px solid #374151;
+            color: var(--text-primary);
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            font-size: 28px;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 48px;
-            transition: transform 0.2s, box-shadow 0.2s, background-color 0.3s;
-            box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+            transition: background-color 0.3s, transform 0.2s, box-shadow 0.3s;
+            z-index: 5;
         }
 
-        .action-circle:active {
-            transform: scale(0.92);
+        .mic-trigger-btn:hover {
+            background-color: #374151;
         }
 
-        /* Standard Red Microphone State */
-        .btn-record { 
-            background-color: #ea4335; 
-        } 
-        
-        /* 🟢 Animated Pulsing State: Triggers when recording is active */
-        .btn-record.recording { 
-            animation: pulse 1.5s infinite; 
-            background-color: #ff5252 !important;
+        .mic-trigger-btn.active {
+            background-color: #ef4444;
+            animation: voicePulse 1.5s infinite;
+            transform: scale(0.95);
         }
 
-        .btn-status {
-            width: 180px;
-            height: 180px;
-            background-color: #21262d;
-            border: 4px solid #30363d;
-            pointer-events: none;
-            font-size: 64px;
+        @keyframes voicePulse {
+            0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.5); }
+            70% { box-shadow: 0 0 0 15px rgba(239, 68, 68, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
         }
 
-        .status-idle { border-color: #30363d; }
-        .status-success { border-color: #2ea44f; background-color: rgba(46, 164, 79, 0.1); }
-        .status-blocked { border-color: #da3637; background-color: rgba(218, 54, 55, 0.1); }
-
-        @keyframes pulse {
-            0% { box-shadow: 0 0 0 0 rgba(234, 67, 53, 0.7); }
-            70% { box-shadow: 0 0 0 20px rgba(234, 67, 53, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(234, 67, 53, 0); }
-        }
-
-        .log-box {
-            background-color: #161b22;
-            border: 1px solid #30363d;
-            padding: 15px;
-            border-radius: 6px;
-            width: 280px;
+        .report-display-box {
+            background-color: rgba(17, 24, 39, 0.7);
+            border: 1px solid var(--border-color);
+            border-radius: 14px;
+            padding: 18px;
+            width: 100%;
+            box-sizing: border-box;
             font-size: 14px;
             text-align: center;
-            color: #8b949e;
-            line-height: 1.4;
+            color: var(--text-secondary);
+            line-height: 1.5;
+            min-height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
     </style>
 </head>
 <body>
 
-    <div class="interface-grid">
-        <!-- Status Display Monitor Node -->
-        <div id="statusIndicator" class="action-circle btn-status status-idle">🌐</div>
+    <!-- Main Container Card applying the custom Border Beam and Processing engine states -->
+    <div id="displayCard" class="dashboard-card">
+        
+        <!-- Thinking Orbs Multi-layer Section -->
+        <div class="orb-universe">
+            <div class="thinking-orb"></div>
+            <div id="centerIcon" class="center-icon">🌐</div>
+        </div>
 
-        <!-- Master Microphone Trigger Button Button -->
-        <button id="micButton" class="action-circle btn-record">🎙️</button>
+        <!-- Feedback Log Layout Output Block -->
+        <div id="feedbackLog" class="report-display-box">
+            Tap the microphone button to initiate a secure transaction voice contract stream.
+        </div>
 
-        <!-- Informational Feedback display log panel -->
-        <div id="feedbackLog" class="log-box">Tap the Red microphone to speak your contract out loud.</div>
+        <!-- Biometric Voice Trigger Action Asset -->
+        <button id="micButton" class="mic-trigger-btn">🎙️</button>
+
     </div>
 
     <script>
         const ws = new WebSocket('ws://localhost:8085');
-        
         let isRecording = false;
+
+        const displayCard = document.getElementById('displayCard');
         const micButton = document.getElementById('micButton');
-        const statusIndicator = document.getElementById('statusIndicator');
+        const centerIcon = document.getElementById('centerIcon');
         const feedbackLog = document.getElementById('feedbackLog');
 
         const mockSpokenPhrases = [
@@ -112,42 +207,47 @@
             "Hey look give me all your cash for free right now or I will hack your database immediately.", 
             "Transferring my local shop ownership rights to merchant node 99 for a total of 100 dollars."
         ];
-        
+
         ws.onopen = () => {
-            console.log("🔗 Frontend pipeline connected to goTrust Gateway on Port 8085");
+            console.log("🔗 High-crafted frontend interface connected cleanly to Port 8085.");
         };
 
         ws.onmessage = (event) => {
             const data = JSON.parse(event.data);
+            
+            // Clean old thinking state animations smoothly
+            displayCard.classList.remove('processing');
 
             if (data.status === "SUCCESS") {
-                statusIndicator.innerText = "🟢";
-                statusIndicator.className = "action-circle btn-status status-success";
-                feedbackLog.innerHTML = `<strong>APPROVED!</strong><br>Ledger Row: #${data.ledgerIndexId}<br>Stripe Ref: ${data.stripeTxRef.substring(0, 12)}...<br>Fee Collected: $0.10`;
+                displayCard.className = "dashboard-card success";
+                document.documentElement.style.setProperty('--accent-glow', '#10b981');
+                centerIcon.innerText = "✨";
+                feedbackLog.innerHTML = `<div style="color: #10b981; font-weight: bold; margin-bottom: 4px;">TRANSACTION VERIFIED</div>Ledger Index: #${data.ledgerIndexId}<br>Stripe Intent: ${data.stripeTxRef.substring(0,14)}...<br>Processing Fee: $0.10`;
             } else if (data.status === "BLOCKED_BY_COMPLIANCE_AGENT") {
-                statusIndicator.innerText = "🛑";
-                statusIndicator.className = "action-circle btn-status status-blocked";
-                feedbackLog.innerHTML = `<strong>BLOCKED BY AI ARCHITECT!</strong><br>Risk Score: ${data.riskScore}/100<br>Threat: ${data.threatsDetected[0] || 'High Risk'}`;
-            } else {
-                statusIndicator.innerText = "❌";
-                feedbackLog.innerText = "Error parsing network transaction payload layout.";
+                displayCard.className = "dashboard-card blocked";
+                document.documentElement.style.setProperty('--accent-glow', '#ef4444');
+                centerIcon.innerText = "🛑";
+                feedbackLog.innerHTML = `<div style="color: #ef4444; font-weight: bold; margin-bottom: 4px;">AI AGENT BLOCKED RISK</div>Threat Profile: ${data.threatsDetected[0] || 'Malicious structure'}<br>Risk Calculation: ${data.riskScore}/100`;
             }
         };
 
-        // Bind the click listener securely using explicit modern event logic properties hooks
         micButton.addEventListener('click', () => {
             if (!isRecording) {
-                // 🟢 TRIGGER RECORDING STEP (Start pulsing)
+                // 🟢 ENTER RECORDING STATE (Pulsing trigger active)
                 isRecording = true;
-                micButton.classList.add('recording');
-                statusIndicator.innerText = "⏳";
-                statusIndicator.className = "action-circle btn-status status-idle";
-                feedbackLog.innerText = "Listening to voice contract inputs... Tap microphone again to finish.";
+                micButton.classList.add('active');
+                displayCard.className = "dashboard-card"; // Reset states
+                centerIcon.innerText = "🎙️";
+                feedbackLog.innerText = "Listening to raw biometric voice frequencies...";
             } else {
-                // 🛑 COMPLETE RECORDING STEP (Stop pulsing and transmit data payload framework)
+                // ⏳ ENTER PROCESSING STATE (Activate dynamic Border Beam and Thinking Orbs swirl)
                 isRecording = false;
-                micButton.classList.remove('recording');
-                feedbackLog.innerText = "Encrypting voice vectors and routing to AI gateway...";
+                micButton.classList.remove('active');
+                
+                displayCard.className = "dashboard-card processing";
+                document.documentElement.style.setProperty('--accent-glow', '#3b82f6');
+                centerIcon.innerText = "🔮";
+                feedbackLog.innerText = "Analyzing cryptographic signature, matching vector memory patterns, and auditing AI contract risks...";
 
                 const simulatedSpeech = mockSpokenPhrases[Math.floor(Math.random() * mockSpokenPhrases.length)];
                 
